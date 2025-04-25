@@ -8,8 +8,8 @@ def create_app(rag_system):
     
     # Sidebar navigation
     nav = st.sidebar.radio(
-        "Navigation",
-        ["Dashboard", "Search Similar Changes", "Impact Analysis", "Query Interface"]
+    "Navigation",
+    ["Dashboard", "Search Similar Changes", "Impact Analysis", "Query Interface", "LLM Configuration"]
     )
     
     if nav == "Dashboard":
@@ -18,6 +18,8 @@ def create_app(rag_system):
         show_search_interface(rag_system)
     elif nav == "Impact Analysis":
         show_impact_analysis(rag_system)
+    elif nav == "LLM Configuration":
+        show_llm_config(rag_system)
     else:  # Query Interface
         show_query_interface(rag_system)
 
@@ -179,6 +181,47 @@ def show_impact_analysis(rag_system):
     # Show details in table
     st.dataframe(negative_df[["date", "category", "description", "percent_change"]])
 
+
+    # Show LLM-powered analysis if available
+    st.subheader("AI Analysis")
+    
+    # Select a change to analyze
+    change_options = [(f"{change.description} ({change.category})", change.change_id) 
+                      for change in rag_system.knowledge_repo.changes]
+    
+    selected_change = st.selectbox(
+        "Select a change to analyze in depth",
+        options=[option[0] for option in change_options],
+        format_func=lambda x: x
+    )
+    
+    if selected_change:
+        # Get the change_id from the selected option
+        selected_change_id = next(option[1] for option in change_options if option[0] == selected_change)
+        
+        # Analyze the change
+        with st.spinner("Analyzing change..."):
+            analysis = rag_system.analyze_change_impact(selected_change_id)
+        
+        # Display the analysis
+        if "llm_analysis" in analysis:
+            st.write(analysis["llm_analysis"])
+        else:
+            # If LLM is not available, show a basic analysis
+            st.write("Basic analysis (LLM not configured):")
+            metrics_matched = sum(1 for m in analysis["impact_analysis"].values() if m["matched_expectation"])
+            total_metrics = len(analysis["impact_analysis"])
+            
+            st.write(f"This change met {metrics_matched}/{total_metrics} of its expected impacts.")
+            
+            # Show metrics that didn't meet expectations
+            if metrics_matched < total_metrics:
+                st.write("Metrics that didn't meet expectations:")
+                for metric_name, metric_data in analysis["impact_analysis"].items():
+                    if not metric_data["matched_expectation"]:
+                        st.write(f"- {metric_name}: Expected {metric_data['expected']} but got {metric_data['actual']} ({metric_data['percent_change']:.2f}%)")
+                        
+
 def show_query_interface(rag_system):
     st.header("Natural Language Query Interface")
     
@@ -192,6 +235,54 @@ def show_query_interface(rag_system):
     query = st.text_input("Enter your question")
     
     if query:
-        insight = rag_system.generate_insight(query)
+        # Display spinner while generating insight
+        with st.spinner("Generating insight..."):
+            insight = rag_system.generate_insight(query)
+        
         st.subheader("Insight")
         st.write(insight)
+        
+        # If LLM is not configured, show a message
+        if "LLM service is not configured" in insight:
+            st.warning("For enhanced insights, configure the LLM service by setting the ANTHROPIC_API_KEY environment variable.")
+
+def show_llm_config(rag_system):
+    st.header("LLM Configuration")
+    
+    # Import config
+    import config
+    
+    # LLM toggle
+    use_llm = st.checkbox("Use LLM for enhanced insights", value=config.USE_LLM)
+    
+    # LLM provider selection
+    llm_provider = st.selectbox(
+        "Select LLM provider",
+        ["OpenAI", "Anthropic", "Google", "Hugging Face (local)"],
+        index=["openai", "anthropic", "google", "huggingface"].index(config.LLM_PROVIDER.lower())
+    )
+    
+    # API key input
+    api_key = st.text_input(
+        f"{llm_provider} API Key",
+        value=config.API_KEYS.get(llm_provider.lower(), ""),
+        type="password"
+    )
+    
+    # Save button
+    if st.button("Save LLM Configuration"):
+        config.USE_LLM = use_llm
+        config.LLM_PROVIDER = llm_provider.lower()
+        config.API_KEYS[llm_provider.lower()] = api_key
+        
+        # Update RAG system
+        rag_system.use_llm = use_llm
+        if use_llm and api_key:
+            if llm_provider.lower() == "openai":
+                # Update OpenAI API key
+                import openai
+                openai.api_key = api_key
+                rag_system.llm_available = True
+            # Add other providers as needed
+        
+        st.success("LLM configuration saved!")
