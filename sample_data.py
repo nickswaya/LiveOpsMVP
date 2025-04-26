@@ -385,7 +385,7 @@ def generate_sample_data(num_changes: int = 500) -> KnowledgeRepository:
     categories = list(category_templates.keys())
     
     # Common metrics across all changes
-    metrics = ["revenue", "dau", "retention", "session_length", "churn_rate", "percent_payers", "percent_spinners", "transactions per purchaser"]
+    metrics = ["revenue", "dau", "retention", "session_length", "conversion_rate"]
     
     # Generate random changes over the past 30 days
     start_date = datetime.now() - timedelta(days=30)

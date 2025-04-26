@@ -1,22 +1,30 @@
 import os
-import anthropic
-from typing import Optional
+import json
+import anthropic # type: ignore
+from typing import Optional, Dict, Any
 import streamlit as st
+
+from prompts.system_prompts import (
+    CHANGE_ANALYSIS_PROMPT, 
+    TREND_ANALYSIS_PROMPT, 
+    CATEGORY_ANALYSIS_PROMPT,
+    QUERY_ANALYSIS_PROMPT
+)
+from prompts.analysis_prompts import (
+    generate_change_analysis_prompt,
+    generate_trend_analysis_prompt,
+    generate_category_analysis_prompt
+)
+from prompts.query_prompts import (
+    generate_query_prompt,
+    generate_complex_query_prompt
+)
 
 
 class LLMService:
     def __init__(self, api_key: Optional[str] = None):
-        # Try to get API key from different sources in order of priority:
-        # 1. Directly provided API key
-        # 2. Streamlit secrets
-        # 3. Environment variables
-        
-        if api_key:
-            self.api_key = api_key
-        elif "ANTHROPIC_API_KEY" in st.secrets:
-            self.api_key = st.secrets["ANTHROPIC_API_KEY"]
-        else:
-            self.api_key = os.environ.get("ANTHROPIC_API_KEY")
+        # Use provided API key or try to get from environment variable
+        self.api_key = api_key or os.environ.get("ANTHROPIC_API_KEY")
         
         if not self.api_key:
             self.is_enabled = False
@@ -24,16 +32,23 @@ class LLMService:
         else:
             self.is_enabled = True
             self.client = anthropic.Anthropic(api_key=self.api_key)
-            self.model = "claude-3-7-sonnet-20250219"
+            self.model = "claude-3-7-sonnet-20250219"  # Use this model or a less expensive one
             self.usage_count = 0
-            self.usage_limit = 50
+            self.usage_limit = 50  # Adjust based on credit allocation
             
     def generate_response(self, prompt: str, system_prompt: str = "", max_tokens: int = 1000) -> str:
         """Generate a response from the LLM model."""
         if not self.is_enabled:
             return "LLM service is not configured. Please set ANTHROPIC_API_KEY environment variable."
         
+        # Check usage limit
+        if self.usage_count >= self.usage_limit:
+            return "API usage limit reached. To conserve credits, LLM features have been temporarily disabled."
+        
         try:
+            # Increment usage count (do this before the API call in case of errors)
+            self.usage_count += 1
+            
             message = self.client.messages.create(
                 model=self.model,
                 max_tokens=max_tokens,
@@ -46,51 +61,72 @@ class LLMService:
         except Exception as e:
             return f"Error generating LLM response: {str(e)}"
     
-    def analyze_change_impact(self, change_description: str, metrics_data: dict) -> str:
-        """Generate an analysis of the impact of a change based on metrics data."""
+    def analyze_change_impact(self, change_data: Dict[str, Any], domain_context: Dict[str, Any], confounding_factors: list) -> str:
+        """Generate an analysis of the impact of a change based on provided data."""
         if not self.is_enabled:
             return "LLM service is not configured. Please set ANTHROPIC_API_KEY environment variable."
         
-        system_prompt = """
-        You are an analytics expert for a mobile gaming company. 
-        Analyze the impact of a live ops change based on the provided metrics data.
-        Focus on whether the change achieved its expected impact and provide insights on why it may have performed as it did.
-        Keep your analysis concise and data-driven, focusing on the most significant impacts.
-        """
+        # Generate prompt using the template
+        prompt_data = generate_change_analysis_prompt(change_data, domain_context, confounding_factors)
         
-        prompt = f"""
-        Change Description: {change_description}
+        # Convert to JSON string for the LLM
+        prompt = json.dumps(prompt_data, indent=2)
         
-        Metrics Data:
-        {metrics_data}
-        
-        Please analyze the impact of this change, focusing on:
-        1. Did the change achieve its expected impact?
-        2. Which metrics were most significantly affected?
-        3. What insights can be drawn from this change for future similar changes?
-        """
-        
-        return self.generate_response(prompt, system_prompt)
+        # Use the specific system prompt for change analysis
+        return self.generate_response(prompt, CHANGE_ANALYSIS_PROMPT)
     
-    def generate_insight_from_query(self, query: str, changes_data: list) -> str:
-        """Generate an insight based on a natural language query about changes."""
+    def analyze_metric_trend(self, metric_name: str, trend_data: list, domain_context: Dict[str, Any]) -> str:
+        """Generate an analysis of trends for a specific metric."""
         if not self.is_enabled:
             return "LLM service is not configured. Please set ANTHROPIC_API_KEY environment variable."
         
-        system_prompt = """
-        You are an analytics expert for a mobile gaming company.
-        Answer questions about live ops changes and their impacts on key metrics.
-        Use the provided data to give concise, data-driven insights.
-        Focus on extracting actionable insights from the patterns in the data.
-        """
+        # Generate prompt using the template
+        prompt_data = generate_trend_analysis_prompt(metric_name, trend_data, domain_context)
         
-        prompt = f"""
-        User Query: {query}
+        # Convert to JSON string for the LLM
+        prompt = json.dumps(prompt_data, indent=2)
         
-        Changes Data:
-        {changes_data}
+        # Use the specific system prompt for trend analysis
+        return self.generate_response(prompt, TREND_ANALYSIS_PROMPT)
+    
+    def analyze_category(self, category: str, metrics_stats: Dict[str, Any], sample_changes: list, domain_context: Dict[str, Any]) -> str:
+        """Generate an analysis of a category of changes."""
+        if not self.is_enabled:
+            return "LLM service is not configured. Please set ANTHROPIC_API_KEY environment variable."
         
-        Please provide a concise and specific answer to the query using only the data provided.
-        """
+        # Generate prompt using the template
+        prompt_data = generate_category_analysis_prompt(category, metrics_stats, sample_changes, domain_context)
         
-        return self.generate_response(prompt, system_prompt)
+        # Convert to JSON string for the LLM
+        prompt = json.dumps(prompt_data, indent=2)
+        
+        # Use the specific system prompt for category analysis
+        return self.generate_response(prompt, CATEGORY_ANALYSIS_PROMPT)
+    
+    def answer_query(self, query: str, intent: Dict[str, Any], domain_context: Dict[str, Any], context_data: Dict[str, Any]) -> str:
+        """Generate an answer to a natural language query."""
+        if not self.is_enabled:
+            return "LLM service is not configured. Please set ANTHROPIC_API_KEY environment variable."
+        
+        # Generate prompt using the template
+        prompt_data = generate_query_prompt(query, intent, domain_context, context_data)
+        
+        # Convert to JSON string for the LLM
+        prompt = json.dumps(prompt_data, indent=2)
+        
+        # Use the specific system prompt for query analysis
+        return self.generate_response(prompt, QUERY_ANALYSIS_PROMPT)
+    
+    def answer_complex_query(self, query: str, related_data: Dict[str, Any], domain_context: Dict[str, Any]) -> str:
+        """Generate an answer to a complex query that spans multiple intents."""
+        if not self.is_enabled:
+            return "LLM service is not configured. Please set ANTHROPIC_API_KEY environment variable."
+        
+        # Generate prompt using the template
+        prompt_data = generate_complex_query_prompt(query, related_data, domain_context)
+        
+        # Convert to JSON string for the LLM
+        prompt = json.dumps(prompt_data, indent=2)
+        
+        # Use the specific system prompt for query analysis
+        return self.generate_response(prompt, QUERY_ANALYSIS_PROMPT)
