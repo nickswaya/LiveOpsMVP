@@ -4,6 +4,7 @@ Basic example demonstrating the enhanced embedding system.
 
 from typing import List, Dict
 from datetime import datetime
+import numpy as np
 
 from ..models import create_embedding_model
 from ..vectorstore import VectorStore, Document
@@ -88,7 +89,14 @@ def main():
         
         # Create embeddings and store documents
         for chunk in chunks:
+            # Convert embedding to numpy array and normalize
             embedding = model.embed(chunk.text)
+            if isinstance(embedding, list):
+                embedding = np.array(embedding)
+            if len(embedding.shape) == 1:
+                # L2 normalize the embedding
+                embedding = embedding / np.linalg.norm(embedding)
+            
             doc = Document(
                 text=chunk.text,
                 embedding=embedding,

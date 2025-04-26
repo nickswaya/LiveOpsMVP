@@ -6,6 +6,7 @@ from typing import List, Dict, Any, Optional, Tuple
 import numpy as np
 from dataclasses import dataclass, field
 from datetime import datetime
+import uuid
 
 @dataclass
 class Document:
@@ -14,6 +15,17 @@ class Document:
     embedding: np.ndarray
     metadata: Dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.now)
+    id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    
+    def __hash__(self):
+        """Make Document hashable using its unique ID."""
+        return hash(self.id)
+    
+    def __eq__(self, other):
+        """Implement equality using document ID."""
+        if not isinstance(other, Document):
+            return False
+        return self.id == other.id
 
 class VectorStore:
     """In-memory vector store with similarity search capabilities."""

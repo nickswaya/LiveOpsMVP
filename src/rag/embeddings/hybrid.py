@@ -100,49 +100,58 @@ class HybridSearcher:
         Returns:
             List of SearchResult objects, sorted by combined score
         """
-        # Get semantic search results
+        # Get semantic search results for all documents
         query_embedding = self.embedding_model.embed(query)
         semantic_results = self.vector_store.similarity_search(
             query_embedding,
-            k=k,
-            score_threshold=None  # We'll apply threshold to combined score
+            k=len(self.vector_store.documents),
+            score_threshold=None
         )
         
-        if not semantic_results:
-            return []
+        # Create mapping of document ID to semantic score
+        semantic_scores = {doc.id: score for doc, score in semantic_results}
         
         # Get keyword search scores
         keyword_scores = self._compute_keyword_scores(query)
         
-        # Combine scores
+        # Combine scores for all documents
         results = []
-        for (doc, semantic_score), keyword_score in zip(semantic_results, keyword_scores):
-            # Compute combined score
-            combined_score = (
-                self.semantic_weight * semantic_score +
-                self.keyword_weight * keyword_score
-            )
+        for doc, keyword_score in zip(self.vector_store.documents, keyword_scores):
+            # Get semantic score (default to 0 if not in top results)
+            semantic_score = semantic_scores.get(doc.id, 0.0)
+            # Normalize keyword score to 0-1 range if needed
+            keyword_score = float(keyword_score)
+            if keyword_score > 1.0:
+                keyword_score = keyword_score / (1.0 + keyword_score)  # Soft normalization
             
-            # Apply score threshold
-            if score_threshold is not None and combined_score < score_threshold:
-                continue
-            
-            # Apply metadata filters
-            if metadata_filters:
-                matches = True
-                for key, value in metadata_filters.items():
-                    if key not in doc.metadata or doc.metadata[key] != value:
-                        matches = False
-                        break
-                if not matches:
+            # Include if either score is significant
+            if semantic_score > 0.01 or keyword_score > 0.01:
+                # Compute combined score
+                combined_score = (
+                    self.semantic_weight * semantic_score +
+                    self.keyword_weight * keyword_score
+                )
+                
+                # Apply score threshold
+                if score_threshold is not None and combined_score < score_threshold:
                     continue
-            
-            results.append(SearchResult(
-                document=doc,
-                semantic_score=semantic_score,
-                keyword_score=keyword_score,
-                combined_score=combined_score
-            ))
+                
+                # Apply metadata filters
+                if metadata_filters:
+                    matches = True
+                    for key, value in metadata_filters.items():
+                        if key not in doc.metadata or doc.metadata[key] != value:
+                            matches = False
+                            break
+                    if not matches:
+                        continue
+                
+                results.append(SearchResult(
+                    document=doc,
+                    semantic_score=semantic_score,
+                    keyword_score=keyword_score,
+                    combined_score=combined_score
+                ))
         
         # Sort by combined score
         results.sort(key=lambda x: x.combined_score, reverse=True)
