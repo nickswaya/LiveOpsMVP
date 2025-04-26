@@ -2,11 +2,13 @@
 
 ## Overall Architecture
 
-The system follows a modular architecture with clear separation of concerns:
+The system follows a modular architecture with clear separation of concerns, with planned enhancements to the RAG system:
+
+### Current Architecture
 
 ```mermaid
 flowchart TD
-    UI[UI Layer] --> RAG[RAG System]
+    UI[UI Layer] --> RAG[Enhanced RAG System]
     RAG --> Data[Data Layer]
     RAG --> LLM[LLM Service]
     
@@ -18,14 +20,32 @@ flowchart TD
         App --> Components
     end
     
-    subgraph RAG System
+    subgraph "Enhanced RAG System"
         Core[Core RAG]
-        Indexing[Indexing]
-        DomainKnowledge[Domain Knowledge]
-        Analysis[Analysis]
-        Core --> Indexing
-        Core --> DomainKnowledge
-        Core --> Analysis
+        
+        subgraph "Advanced Retrieval"
+            Embeddings[Sentence Embeddings]
+            Semantic[Semantic Search]
+            Hybrid[Hybrid Retrieval]
+            KGraph[Knowledge Graph]
+        end
+        
+        subgraph "Context Management"
+            Intent[Intent Analysis]
+            Selection[Context Selection]
+            Memory[Contextual Memory]
+            Verification[Self-Verification]
+        end
+        
+        Core --> Embeddings
+        Embeddings --> Semantic
+        Semantic --> Hybrid
+        Core --> KGraph
+        
+        Core --> Intent
+        Intent --> Selection
+        Selection --> Memory
+        Memory --> Verification
     end
     
     subgraph Data Layer
@@ -38,6 +58,40 @@ flowchart TD
         Service[LLM Service]
         Prompts[Prompts]
         Providers[LLM Providers]
+    end
+```
+
+### Planned RAG System Architecture
+
+The enhanced RAG system will incorporate several new components and capabilities:
+
+```mermaid
+flowchart TD
+    Query[Query Input] --> Intent[Intent Analysis]
+    Intent --> Retrieval[Advanced Retrieval]
+    
+    subgraph "Advanced Retrieval"
+        Semantic[Semantic Search]
+        Keyword[Keyword Search]
+        Graph[Knowledge Graph]
+        
+        Semantic --> Hybrid[Hybrid Results]
+        Keyword --> Hybrid
+        Graph --> Hybrid
+    end
+    
+    Retrieval --> Context[Context Selection]
+    Context --> Memory[Contextual Memory]
+    Memory --> Verification[Self-Verification]
+    Verification --> Response[Final Response]
+    
+    subgraph "Knowledge Graph"
+        Entities[Entities]
+        Relations[Relations]
+        Causality[Causal Links]
+        
+        Entities --> Relations
+        Relations --> Causality
     end
 ```
 
@@ -75,37 +129,62 @@ LiveOpsAgent/
 
 ## Key Design Patterns
 
-### 1. Repository Pattern
+### 1. Embedding System Patterns
+- **Factory Pattern**: Used in embedding model creation
+  ```python
+  model = create_embedding_model("local", "all-MiniLM-L6-v2")
+  ```
+- **Strategy Pattern**: Different embedding providers follow same interface
+  ```python
+  class EmbeddingModel(ABC):
+      def embed(self, text: str | List[str]) -> np.ndarray:
+          pass
+  ```
+- **Composite Pattern**: Hybrid search combines multiple search strategies
+  ```python
+  combined_score = (
+      semantic_weight * semantic_score +
+      keyword_weight * keyword_score
+  )
+  ```
+
+### 2. Repository Pattern
 - `KnowledgeRepository` acts as a centralized data store
 - Provides methods for adding and retrieving changes and metrics
 - Abstracts data storage details from the rest of the system
 
-### 2. Service Layer Pattern
+### 3. Service Layer Pattern
 - `LLMService` encapsulates LLM interaction details
 - Handles API communication, rate limiting, and error handling
 - Provides a clean interface for LLM operations
 
-### 3. Strategy Pattern
+### 4. Strategy Pattern
 - Used in the indexing system to support different indexing strategies
 - Each index type (category, metric, temporal, tag) follows the same interface
 - Makes it easy to add new indexing strategies
 
-### 4. Factory Pattern
+### 5. Factory Pattern
 - Used in prompt generation to create different types of prompts
 - Each prompt type has its own generator function
 - Makes it easy to maintain and modify prompt structures
 
-### 5. Facade Pattern
+### 6. Facade Pattern
 - `EnhancedRAGSystem` provides a simplified interface to the complex subsystems
 - Coordinates between data layer, indexing, domain knowledge, and analysis
 - Makes the system easier to use from the UI layer
 
-### 6. Observer Pattern
+### 7. Observer Pattern
 - Used in the UI for state management with Streamlit
 - Components react to state changes automatically
 - Enables interactive UI updates
 
 ## Component Responsibilities
+
+### Embedding System
+- **Models**: Manage embedding model implementations
+- **Vector Store**: Handle vector storage and similarity search
+- **Text Processor**: Process and chunk text documents
+- **Hybrid Search**: Combine semantic and keyword search
 
 ### Data Layer
 - Define data structures for changes and metrics
@@ -114,7 +193,11 @@ LiveOpsAgent/
 
 ### RAG System
 - Core: Coordinate between components
-- Indexing: Build and maintain search indexes
+- Embeddings: Generate and manage embeddings
+  - Model management and configuration
+  - Vector storage and retrieval
+  - Text processing and chunking
+  - Hybrid search implementation
 - Domain Knowledge: Manage domain-specific context
 - Analysis: Analyze changes and generate insights
 
