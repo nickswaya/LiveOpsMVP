@@ -1,0 +1,230 @@
+# Project Intelligence Rules
+
+## Code Organization
+
+### Directory Structure
+- All source code goes under src/
+- Each major component has its own directory
+- Pages go under ui/pages/
+- Reusable components under ui/components/
+- Prompts organized by type under llm/prompts/
+
+### File Naming
+- Use snake_case for Python files
+- Use descriptive, purpose-indicating names
+- Group related files in appropriate directories
+- Keep filenames concise but clear
+
+### Module Structure
+- Each module should have a clear single responsibility
+- Use type hints consistently
+- Include docstrings for all public interfaces
+- Follow PEP 8 style guidelines
+
+## Implementation Patterns
+
+### Data Layer
+- Use dataclasses for data models
+- Implement repository pattern for data access
+- Keep data validation in models
+- Use type hints for all data structures
+
+### RAG System
+- Keep indexing strategies modular
+- Maintain clear separation of concerns
+- Use dependency injection for components
+- Handle errors gracefully
+
+### LLM Integration
+- Use structured prompts
+- Handle API errors gracefully
+- Implement rate limiting
+- Cache responses when possible
+
+### UI Components
+- Keep pages focused and modular
+- Use consistent layout patterns
+- Implement proper state management
+- Handle loading and error states
+
+## Coding Conventions
+
+### Python Style
+- Follow PEP 8
+- Use type hints
+- Write clear docstrings
+- Keep functions focused
+
+### Error Handling
+- Use specific exception types
+- Provide clear error messages
+- Implement graceful fallbacks
+- Log errors appropriately
+
+### State Management
+- Use Streamlit session state
+- Keep state updates localized
+- Handle state initialization properly
+- Clear state when needed
+
+### Documentation
+- Document public interfaces
+- Include usage examples
+- Explain complex logic
+- Keep docs up to date
+
+## Project Preferences
+
+### Code Style
+- Use double quotes for strings
+- Line length max 100 characters
+- Group imports logically
+- Use type hints consistently
+
+### UI Design
+- Use consistent spacing
+- Follow Streamlit patterns
+- Keep interfaces clean
+- Use clear labels
+
+### Error Messages
+- Be specific and clear
+- Provide actionable feedback
+- Use consistent formatting
+- Include error codes
+
+### Documentation
+- Keep Memory Bank updated
+- Document decisions
+- Track progress
+- Note known issues
+
+## Development Workflow
+
+### Code Changes
+- Update Memory Bank when needed
+- Follow modular design
+- Keep changes focused
+- Test thoroughly
+
+### Testing
+- Write unit tests
+- Test edge cases
+- Verify UI interactions
+- Check error handling
+
+### Documentation
+- Update docs with changes
+- Keep Memory Bank current
+- Document decisions
+- Track progress
+
+### Review Process
+- Check type hints
+- Verify error handling
+- Test functionality
+- Update documentation
+
+## Known Patterns
+
+### Data Handling
+- Use repository pattern
+- Implement data validation
+- Handle edge cases
+- Cache when appropriate
+
+### UI Interactions
+- Use consistent layouts
+- Handle loading states
+- Show error feedback
+- Provide help text
+
+### Analysis Flow
+- Validate inputs
+- Handle missing data
+- Show progress
+- Present clear results
+
+### LLM Usage
+- Structure prompts clearly
+- Handle API errors
+- Implement rate limiting
+- Cache responses
+
+## Critical Paths
+
+### Data Flow
+1. Data input/validation
+2. Repository storage
+3. Index updates
+4. Analysis processing
+
+### Query Processing
+1. Input parsing
+2. Context retrieval
+3. LLM processing
+4. Result formatting
+
+### Analysis Pipeline
+1. Data gathering
+2. Context enrichment
+3. Analysis processing
+4. Result presentation
+
+### UI Updates
+1. State management
+2. Data fetching
+3. Processing
+4. Rendering
+
+## Common Issues
+
+### Performance
+- Large dataset handling
+- LLM response times
+- UI responsiveness
+- Search performance
+
+### Error Cases
+- Invalid inputs
+- Missing data
+- API failures
+- State conflicts
+
+### UI Challenges
+- State management
+- Loading states
+- Error feedback
+- Data presentation
+
+### Integration Points
+- LLM API connection
+- Data synchronization
+- State updates
+- Component communication
+
+## Best Practices
+
+### Code Quality
+- Use type hints
+- Write tests
+- Document clearly
+- Handle errors
+
+### Performance
+- Cache appropriately
+- Optimize queries
+- Batch operations
+- Monitor resources
+
+### User Experience
+- Clear feedback
+- Consistent design
+- Helpful messages
+- Smooth interactions
+
+### Maintenance
+- Keep docs updated
+- Monitor issues
+- Track progress
+- Plan improvements

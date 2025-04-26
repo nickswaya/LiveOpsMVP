@@ -1,6 +1,8 @@
 import random
 from datetime import datetime, timedelta
-from data_model import LiveOpsChange, MetricMeasurement, KnowledgeRepository
+from typing import Dict
+from .models import LiveOpsChange, MetricMeasurement
+from .repository import KnowledgeRepository
 
 def generate_sample_data(num_changes: int = 500) -> KnowledgeRepository:
     """Generate sample live ops changes and metrics for testing."""

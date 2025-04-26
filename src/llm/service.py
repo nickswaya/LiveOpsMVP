@@ -1,25 +1,23 @@
 import os
 import json
-import anthropic # type: ignore
 from typing import Optional, Dict, Any
-import streamlit as st
+import anthropic # type: ignore
 
-from prompts.system_prompts import (
+from .prompts.system_prompts import (
     CHANGE_ANALYSIS_PROMPT, 
     TREND_ANALYSIS_PROMPT, 
     CATEGORY_ANALYSIS_PROMPT,
     QUERY_ANALYSIS_PROMPT
 )
-from prompts.analysis_prompts import (
+from .prompts.analysis_prompts import (
     generate_change_analysis_prompt,
     generate_trend_analysis_prompt,
     generate_category_analysis_prompt
 )
-from prompts.query_prompts import (
+from .prompts.query_prompts import (
     generate_query_prompt,
     generate_complex_query_prompt
 )
-
 
 class LLMService:
     def __init__(self, api_key: Optional[str] = None):
@@ -110,7 +108,7 @@ class LLMService:
         
         # Generate prompt using the template
         prompt_data = generate_query_prompt(query, intent, domain_context, context_data)
-        
+
         # Convert to JSON string for the LLM
         prompt = json.dumps(prompt_data, indent=2)
         

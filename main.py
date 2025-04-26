@@ -1,9 +1,9 @@
 # main.py
-from data_model import KnowledgeRepository
-from sample_data import generate_sample_data
-from rag_system import EnhancedRAGSystem
-from llm_service import LLMService
-from ui import create_app
+from src.data.repository import KnowledgeRepository
+from src.data.sample_generator import generate_sample_data
+from src.rag.core import EnhancedRAGSystem
+from src.llm.service import LLMService
+from src.ui.app import create_app
 import streamlit as st
 import os
 
