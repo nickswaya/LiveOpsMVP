@@ -8,21 +8,26 @@ import streamlit as st
 import os
 
 def main():
-    # Generate sample data
-    print("Generating sample data...")
-    repo = generate_sample_data(100)
-    print(f"Generated {len(repo.changes)} changes with metrics")
+    # Initialize session state for persistent objects
+    if 'repo' not in st.session_state:
+        print("Generating sample data...")
+        st.session_state.repo = generate_sample_data(100)
+        print(f"Generated {len(st.session_state.repo.changes)} changes with metrics")
     
-    # Initialize LLM service
-    llm_service = LLMService()
+    if 'llm_service' not in st.session_state:
+        print("Initializing LLM service...")
+        st.session_state.llm_service = LLMService()
     
-    # Create RAG system with LLM service
-    print("Initializing RAG system...")
-    rag = EnhancedRAGSystem(repo, llm_service)
+    if 'rag' not in st.session_state:
+        print("Initializing RAG system...")
+        st.session_state.rag = EnhancedRAGSystem(
+            st.session_state.repo, 
+            st.session_state.llm_service
+        )
     
-    # Start the UI
+    # Use the persistent objects from session state
     print("Starting application...")
-    create_app(rag)
+    create_app(st.session_state.rag)
 
 if __name__ == "__main__":
     main()

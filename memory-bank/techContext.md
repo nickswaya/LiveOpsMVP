@@ -120,12 +120,15 @@ mypy>=0.910
    - Future: Upgrade to better embeddings
 
 2. **Data Storage & State Management**
-   - In-memory repository
-   - No persistence between runs
-   - Streamlit's stateless nature causing app restarts
-   - Need for persistent storage solution
+   - In-memory repository with session persistence
+   - Streamlit session state for object persistence:
+     - Repository state
+     - LLM service state
+     - Token counter state
+     - RAG system state
+   - No cross-session persistence yet
    - Future: Add database support for:
-     - Token usage statistics
+     - Cross-session token usage statistics
      - Query history
      - System state
      - User preferences
@@ -136,10 +139,11 @@ mypy>=0.910
    - Future: Multi-provider support
 
 4. **UI Framework Constraints**
-   - Streamlit's stateless architecture
-   - Page reloads reset application state
+   - Streamlit's stateless architecture mitigated with session state
+   - State persists during page interactions
+   - State resets on browser refresh/restart
    - Limited control over component lifecycle
-   - Need for external state persistence
+   - Future: Consider external state persistence
 
 ## Security Considerations
 
