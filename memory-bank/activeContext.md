@@ -12,6 +12,25 @@ We have completed Phase 1 of the RAG system enhancement, implementing a new embe
    - Added smart text processing and chunking
    - Provided example implementation in src/rag/embeddings/
 
+2. **Token Usage Tracking (In Progress)**
+   - Implemented simple token counter for LLM usage monitoring
+   - Integrated token tracking into LLM service
+   - Added token usage statistics to UI
+   - Identified need for persistent storage to maintain stats across app restarts
+
+### Current Challenges
+
+1. **State Persistence**
+   - App restarts on every page interaction due to Streamlit's stateless nature
+   - Token usage statistics reset on page refresh
+   - Need persistent storage solution for maintaining state
+
+2. **UI Improvements Needed**
+   - Better handling of state persistence
+   - More intuitive layout and navigation
+   - Enhanced visualization of token usage and other metrics
+   - Improved error handling and feedback
+
 The new system features:
 - Easy configuration for different embedding providers (prepared for future Snowflake integration)
 - Adjustable weights between semantic and keyword search

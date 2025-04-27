@@ -119,15 +119,27 @@ mypy>=0.910
    - Limited semantic understanding
    - Future: Upgrade to better embeddings
 
-2. **Data Storage**
+2. **Data Storage & State Management**
    - In-memory repository
    - No persistence between runs
-   - Future: Add database support
+   - Streamlit's stateless nature causing app restarts
+   - Need for persistent storage solution
+   - Future: Add database support for:
+     - Token usage statistics
+     - Query history
+     - System state
+     - User preferences
 
 3. **LLM Integration**
    - Single provider support (Anthropic)
    - Limited error recovery
    - Future: Multi-provider support
+
+4. **UI Framework Constraints**
+   - Streamlit's stateless architecture
+   - Page reloads reset application state
+   - Limited control over component lifecycle
+   - Need for external state persistence
 
 ## Security Considerations
 

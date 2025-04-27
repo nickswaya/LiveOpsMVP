@@ -34,6 +34,10 @@ class LLMService:
             self.usage_count = 0
             self.usage_limit = 50  # Adjust based on credit allocation
             
+        # Initialize token counter
+        from .token_counter import TokenCounter
+        self.token_counter = TokenCounter()
+            
     def generate_response(self, prompt: str, system_prompt: str = "", max_tokens: int = 1000) -> str:
         """Generate a response from the LLM model."""
         if not self.is_enabled:
@@ -44,6 +48,12 @@ class LLMService:
             return "API usage limit reached. To conserve credits, LLM features have been temporarily disabled."
         
         try:
+            # Track token usage
+            token_stats = self.token_counter.track_query(
+                context_text=system_prompt,
+                query_text=prompt
+            )
+            
             # Increment usage count (do this before the API call in case of errors)
             self.usage_count += 1
             

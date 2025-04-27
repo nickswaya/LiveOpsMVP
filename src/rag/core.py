@@ -6,6 +6,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 from src.data.repository import KnowledgeRepository
 from src.llm.service import LLMService
+from src.llm.token_counter import TokenCounter
 from src.rag.indexing.indexes import IndexBuilder
 from src.rag.domain_knowledge.context import DomainKnowledgeManager
 from src.rag.analysis.analyzer import ChangeAnalyzer
@@ -103,6 +104,29 @@ class EnhancedRAGSystem:
         
         # Default to general query
         return intent
+    
+    def _format_context(self, context_data: Dict[str, Any]) -> str:
+        """Format context data into a string for token counting."""
+        context_parts = []
+        
+        # Format similar changes
+        if "similar_changes" in context_data:
+            for result in context_data["similar_changes"]:
+                change = result["change"]
+                context_parts.append(f"Change: {change.description}")
+                if "metrics" in result:
+                    metrics = result["metrics"]
+                    context_parts.append(f"Metrics: {str(metrics)}")
+        
+        # Format category performance
+        if "category_performance" in context_data:
+            context_parts.append(f"Category Performance: {str(context_data['category_performance'])}")
+        
+        # Format metric trends
+        if "metric_trends" in context_data:
+            context_parts.append(f"Metric Trends: {str(context_data['metric_trends'])}")
+        
+        return "\n".join(context_parts)
     
     def _retrieve_context_for_intent(self, intent: Dict[str, Any], query: str) -> Dict[str, Any]:
         """Retrieve context data based on query intent."""

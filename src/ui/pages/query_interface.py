@@ -56,6 +56,15 @@ def generate_follow_up_suggestions(query: str) -> List[str]:
 
 def show_query_interface(rag_system: EnhancedRAGSystem):
     """Display the natural language query interface."""
+    # Display token usage statistics in sidebar if LLM service is enabled
+    if rag_system.llm_service and rag_system.llm_service.is_enabled:
+        st.sidebar.subheader("Token Usage Statistics")
+        stats = rag_system.llm_service.token_counter.get_stats()
+        st.sidebar.metric("Total Tokens Used", f"{stats['total_tokens_sent']:,}")
+        st.sidebar.metric("Queries Processed", stats['query_count'])
+        st.sidebar.metric("Avg. Tokens/Query", f"{stats['avg_tokens_per_query']:.0f}")
+        st.sidebar.divider()
+    
     st.header("Natural Language Query Interface")
     
     # Introduction to the enhanced capabilities
