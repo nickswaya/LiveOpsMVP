@@ -69,14 +69,20 @@ class DomainKnowledgeManager:
             relevant_domain_context["concepts"] = relevant_concepts
         
         # Add relevant category context
-        if intent["type"] == "category_analysis" and "category" in intent["params"]:
-            category_context = self.get_relevant_category_context(intent["params"]["category"])
+        if intent.get("type") == "category_analysis" and intent.get("params", {}).get("category"):
+            categories = intent["params"]["category"]
+            # Handle both single string and list of categories
+            category = categories[0] if isinstance(categories, list) else categories
+            category_context = self.get_relevant_category_context(category)
             if category_context:
                 relevant_domain_context["category_context"] = category_context
         
         # Add relevant metric context
-        if intent["type"] in ["metric_impact", "metric_trend"] and "metric" in intent["params"]:
-            metric_context = self.get_relevant_metric_context(intent["params"]["metric"])
+        if intent.get("type") in ["metric_impact", "metric_trend"] and intent.get("params", {}).get("metric"):
+            metrics = intent["params"]["metric"]
+            # Handle both single string and list of metrics
+            metric = metrics[0] if isinstance(metrics, list) else metrics
+            metric_context = self.get_relevant_metric_context(metric)
             if metric_context:
                 relevant_domain_context["metric_context"] = metric_context
         

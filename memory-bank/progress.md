@@ -180,11 +180,14 @@ pie title Technical Debt
 - ✓ Fixed: Serialization consistency across layers
 - ✓ Fixed: DateTime serialization in JSON context
 - ✓ Fixed: Objects vs dictionaries in UI components
+- ✓ Fixed: Entity handling for list vs single values
 
 #### RAG System
 - Basic TF-IDF limitations
 - Search accuracy can be improved
 - Performance with large datasets
+- ✓ Fixed: Domain knowledge context handling
+- ✓ Fixed: Entity type handling in context selection
 
 #### LLM Integration
 - Rate limiting not fully implemented

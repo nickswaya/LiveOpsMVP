@@ -129,7 +129,27 @@ LiveOpsAgent/
 
 ## Key Design Patterns
 
-### 1. Embedding System Patterns
+### 1. Entity Handling Patterns
+- **List-Single Value Pattern**: Handle both list and single value entities
+  ```python
+  # Handle both formats consistently
+  def get_entity_value(entity_data: Union[str, List[str]]) -> str:
+      return entity_data[0] if isinstance(entity_data, list) else entity_data
+  ```
+- **Safe Dictionary Access**: Use defensive programming for nested data
+  ```python
+  # Safe access with defaults
+  value = data.get("key", {}).get("nested", default_value)
+  ```
+- **Entity Normalization**: Consistent entity structure across system
+  ```python
+  entities = {
+      "category": ["BOGO"],  # Always use list format
+      "metric": ["revenue"]  # Even for single values
+  }
+  ```
+
+### 2. Embedding System Patterns
 - **Factory Pattern**: Used in embedding model creation
   ```python
   model = create_embedding_model("local", "all-MiniLM-L6-v2")

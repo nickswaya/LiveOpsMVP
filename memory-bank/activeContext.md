@@ -10,8 +10,17 @@ We are implementing Phase 2 of the RAG system enhancement, focusing on improved 
    - Added smart context selection based on intent
    - Created JSON-based configuration for selection rules
    - Added support for different types of context (metrics, changes, domain knowledge)
+   - Fixed entity handling to support both list and single value formats
+   - Added defensive programming for intent data structure access
 
-2. **Serialization Issues (Resolved)**
+2. **Entity Handling Bug Fix (Resolved)**
+   - Fixed TypeError in domain knowledge context selection
+   - Added support for list-type entities in category and metric handling
+   - Implemented graceful handling of both single values and lists
+   - Added defensive programming for safer dictionary access
+   - Updated entity extraction to maintain consistent data structures
+
+3. **Serialization Issues (Resolved)**
    - Added to_dict methods to data models for JSON serialization
    - Updated repository methods to return serializable dictionaries
    - Fixed datetime serialization in metric history

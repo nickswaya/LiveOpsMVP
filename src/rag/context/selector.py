@@ -322,7 +322,10 @@ class ContextSelector:
         """Get relevant domain knowledge."""
         return self.domain_manager.get_context_for_query(
             intent_analysis.get("query", ""),
-            {"type": intent_analysis["intent_type"]}
+            {
+                "type": intent_analysis["intent_type"],
+                "params": intent_analysis.get("entities", {})
+            }
         )
     
     def _get_similar_changes(
