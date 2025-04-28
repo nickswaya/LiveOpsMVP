@@ -1,0 +1,70 @@
+{
+  "intents": [
+    {
+      "id": "category_analysis",
+      "description": "Analysis of a specific category of changes",
+      "required_entities": ["category"],
+      "optional_entities": ["metric", "time_period"],
+      "context_requirements": [
+        "category_changes",
+        "category_performance",
+        "similar_changes"
+      ]
+    },
+    {
+      "id": "metric_trend",
+      "description": "Analysis of trends for a specific metric",
+      "required_entities": ["metric"],
+      "optional_entities": ["time_period", "category"],
+      "context_requirements": [
+        "metric_trends",
+        "similar_changes",
+        "confounding_factors"
+      ]
+    },
+    {
+      "id": "comparative_analysis",
+      "description": "Comparison between different types of changes",
+      "required_entities": ["comparison_targets"],
+      "optional_entities": ["metric", "time_period"],
+      "context_requirements": [
+        "comparison_data",
+        "performance_metrics",
+        "historical_patterns"
+      ]
+    },
+    {
+      "id": "causal_analysis",
+      "description": "Analysis of cause-effect relationships",
+      "required_entities": ["effect", "time_period"],
+      "optional_entities": ["suspected_cause"],
+      "context_requirements": [
+        "temporal_data",
+        "related_changes",
+        "confounding_factors"
+      ]
+    },
+    {
+      "id": "recommendation",
+      "description": "Request for recommendations based on historical data",
+      "required_entities": ["objective"],
+      "optional_entities": ["context_factors", "constraints"],
+      "context_requirements": [
+        "historical_patterns",
+        "success_factors",
+        "similar_scenarios"
+      ]
+    },
+    {
+      "id": "general_query",
+      "description": "General information request without specific analysis type",
+      "required_entities": [],
+      "optional_entities": ["topic", "time_period", "metric", "category"],
+      "context_requirements": [
+        "relevant_changes",
+        "basic_metrics",
+        "domain_knowledge"
+      ]
+    }
+  ]
+}

@@ -21,8 +21,9 @@ def main():
     if 'rag' not in st.session_state:
         print("Initializing RAG system...")
         st.session_state.rag = EnhancedRAGSystem(
-            st.session_state.repo, 
-            st.session_state.llm_service
+            knowledge_repo=st.session_state.repo,
+            llm_service=st.session_state.llm_service,
+            config_dir="config"  # Add config directory path
         )
     
     # Use the persistent objects from session state

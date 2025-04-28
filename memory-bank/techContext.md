@@ -113,6 +113,25 @@ mypy>=0.910
    - Local deployment model
    - Future: Consider multi-user support
 
+### Data Serialization Strategy
+1. **Current Implementation**
+   - Data models with to_dict methods for JSON serialization
+   - Repository methods return serializable dictionaries
+   - DateTime fields converted to ISO format strings
+   - Consistent dictionary structure across layers
+
+2. **Known Issues**
+   - UI components expect object attributes but receive dictionaries
+   - Need to update UI layer for dictionary compatibility
+   - Potential performance impact from frequent serialization
+   - Validation needed for serialized structures
+
+3. **Future Improvements**
+   - Add view models for UI components
+   - Implement data validation for serialized structures
+   - Consider caching serialized results
+   - Add deserialization methods where needed
+
 ### Technical Limitations
 1. **Embedding System**
    - Basic TF-IDF implementation
@@ -144,6 +163,37 @@ mypy>=0.910
    - State resets on browser refresh/restart
    - Limited control over component lifecycle
    - Future: Consider external state persistence
+
+5. **UI Styling & Theming**
+   - CSS variables for theme-aware styling
+   - Dark mode support through data-theme attribute
+   - Responsive design with mobile breakpoints
+   - Custom styling through unsafe_allow_html:
+     ```css
+     /* Base theme variables */
+     :root {
+         --text-color: #1E1E1E;
+         --bg-color: #FFFFFF;
+         --card-bg: #FFFFFF;
+     }
+     
+     /* Dark mode overrides */
+     [data-theme="dark"] {
+         --text-color: #FFFFFF;
+         --bg-color: #1E1E1E;
+         --card-bg: #2D2D2D;
+     }
+     ```
+   - Component styling patterns:
+     - Grid layouts for feature displays
+     - Card-based content organization
+     - Interactive hover effects
+     - Professional animations
+   - Limitations:
+     - Limited control over Streamlit's base styles
+     - Some components require unsafe_allow_html
+     - Custom styling needs careful dark mode consideration
+     - Mobile responsiveness requires manual implementation
 
 ## Security Considerations
 

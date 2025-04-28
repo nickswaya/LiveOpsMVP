@@ -545,12 +545,13 @@ def generate_sample_data(num_changes: int = 500) -> KnowledgeRepository:
             
             after_value = before_value * impact_multiplier
             
-            # Create metric measurement
+            # Create metric measurement with timestamp
             metric = MetricMeasurement(
                 change_id=change_id,
                 metric_name=metric_name,
                 before_value=before_value,
-                after_value=after_value
+                after_value=after_value,
+                timestamp=change_date  # Use the change's timestamp
             )
             repo.add_metric(metric)
     

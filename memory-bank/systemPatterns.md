@@ -211,12 +211,70 @@ LiveOpsAgent/
 - Handle user interactions
 - Manage application state
 
+### Navigation System
+- **State-Based Navigation**
+  ```python
+  # Initialize navigation state
+  if "navigation" not in st.session_state:
+      st.session_state.navigation = "Home"
+      
+  # Update navigation through sidebar
+  nav = st.sidebar.radio(
+      "Navigation",
+      ["Home", "Dashboard", ...],
+      key="nav",
+      index=pages.index(st.session_state.navigation)
+  )
+  
+  # Update navigation through buttons
+  if st.button("Explore Dashboard"):
+      st.session_state.navigation = "Dashboard"
+      st.rerun()
+  ```
+
+### Styling System
+- **Theme-Aware Styling**
+  ```css
+  /* Base theme variables */
+  :root {
+      --text-color: #1E1E1E;
+      --bg-color: #FFFFFF;
+      --card-bg: #FFFFFF;
+  }
+
+  /* Dark mode overrides */
+  [data-theme="dark"] {
+      --text-color: #FFFFFF;
+      --bg-color: #1E1E1E;
+      --card-bg: #2D2D2D;
+  }
+  ```
+
+- **Component Styling**
+  - Consistent use of CSS variables for theming
+  - Responsive design patterns
+  - Interactive elements with hover states
+  - Professional animations and transitions
+
+- **Layout Patterns**
+  - Grid system for feature displays
+  - Card-based content organization
+  - Responsive breakpoints for mobile
+  - Consistent spacing and alignment
+
 ## Design Decisions
 
 1. **Modular Structure**
    - Each component is self-contained
    - Clear interfaces between components
    - Easy to modify or replace individual parts
+   - Consistent styling patterns across components
+
+2. **Navigation Architecture**
+   - Centralized state management
+   - Synchronized sidebar and button navigation
+   - Persistent navigation state
+   - Clean URL structure
 
 2. **Extensible Architecture**
    - Easy to add new features

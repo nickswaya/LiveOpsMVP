@@ -111,19 +111,79 @@ class LLMService:
         # Use the specific system prompt for category analysis
         return self.generate_response(prompt, CATEGORY_ANALYSIS_PROMPT)
     
-    def answer_query(self, query: str, intent: Dict[str, Any], domain_context: Dict[str, Any], context_data: Dict[str, Any]) -> str:
-        """Generate an answer to a natural language query."""
+    def answer_query(
+        self,
+        query: str,
+        intent_analysis: Dict[str, Any],
+        context: Dict[str, Any]
+    ) -> str:
+        """Generate an answer to a natural language query.
+        
+        Args:
+            query: The original query
+            intent_analysis: Results of intent analysis including type, entities, etc.
+            context: Selected and prioritized context data
+            
+        Returns:
+            Generated answer based on the query, intent, and context
+        """
         if not self.is_enabled:
             return "LLM service is not configured. Please set ANTHROPIC_API_KEY environment variable."
         
-        # Generate prompt using the template
-        prompt_data = generate_query_prompt(query, intent, domain_context, context_data)
-
+        # Track token usage for context
+        self.token_counter.track_query(
+            context_text=json.dumps(context, indent=2),
+            query_text=query
+        )
+        
+        # Generate prompt based on intent type
+        intent_type = intent_analysis["intent_type"]
+        
+        if intent_type == "category_analysis":
+            prompt_data = generate_category_analysis_prompt(
+                query=query,
+                intent_analysis=intent_analysis,
+                context=context
+            )
+            system_prompt = CATEGORY_ANALYSIS_PROMPT
+            
+        elif intent_type == "metric_trend":
+            prompt_data = generate_trend_analysis_prompt(
+                query=query,
+                intent_analysis=intent_analysis,
+                context=context
+            )
+            system_prompt = TREND_ANALYSIS_PROMPT
+            
+        elif intent_type == "comparative_analysis":
+            prompt_data = generate_complex_query_prompt(
+                query=query,
+                intent_analysis=intent_analysis,
+                context=context
+            )
+            system_prompt = QUERY_ANALYSIS_PROMPT
+            
+        elif intent_type == "causal_analysis":
+            prompt_data = generate_complex_query_prompt(
+                query=query,
+                intent_analysis=intent_analysis,
+                context=context
+            )
+            system_prompt = QUERY_ANALYSIS_PROMPT
+            
+        else:  # general_query or other types
+            prompt_data = generate_query_prompt(
+                query=query,
+                intent_analysis=intent_analysis,
+                context=context
+            )
+            system_prompt = QUERY_ANALYSIS_PROMPT
+        
         # Convert to JSON string for the LLM
         prompt = json.dumps(prompt_data, indent=2)
         
-        # Use the specific system prompt for query analysis
-        return self.generate_response(prompt, QUERY_ANALYSIS_PROMPT)
+        # Generate response with appropriate system prompt
+        return self.generate_response(prompt, system_prompt)
     
     def answer_complex_query(self, query: str, related_data: Dict[str, Any], domain_context: Dict[str, Any]) -> str:
         """Generate an answer to a complex query that spans multiple intents."""

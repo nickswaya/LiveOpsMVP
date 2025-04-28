@@ -152,7 +152,7 @@ def show_query_interface(rag_system: EnhancedRAGSystem):
                 st.session_state.previous_query = query
                 
                 # Display spinner while generating insight
-                with st.spinner("Analyzing data and generating insight..."):
+                with st.spinner("Adam is working on it..."):
                     insight = rag_system.generate_insight(query)
                 
                 # Store the insight for displaying outside the form

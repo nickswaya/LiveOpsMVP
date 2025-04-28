@@ -1,8 +1,6 @@
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 import numpy as np
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 
 from src.data.repository import KnowledgeRepository
 from src.llm.service import LLMService
@@ -10,12 +8,30 @@ from src.llm.token_counter import TokenCounter
 from src.rag.indexing.indexes import IndexBuilder
 from src.rag.domain_knowledge.context import DomainKnowledgeManager
 from src.rag.analysis.analyzer import ChangeAnalyzer
+from src.rag.intent.analyzer import IntentAnalyzer
+from src.rag.context.selector import ContextSelector
+from src.rag.embeddings.models import create_embedding_model
 
 class EnhancedRAGSystem:
-    def __init__(self, knowledge_repo: KnowledgeRepository, llm_service: Optional[LLMService] = None):
-        """Initialize the RAG system with a knowledge repository and optional LLM service."""
+    def __init__(
+        self,
+        knowledge_repo: KnowledgeRepository,
+        llm_service: Optional[LLMService] = None,
+        config_dir: str = "config"
+    ):
+        """Initialize the RAG system with a knowledge repository and optional LLM service.
+        
+        Args:
+            knowledge_repo: Repository containing changes and metrics
+            llm_service: Optional LLM service for generating insights
+            config_dir: Directory containing configuration files
+        """
         self.knowledge_repo = knowledge_repo
         self.llm_service = llm_service
+        self.config_dir = config_dir
+        
+        # Initialize embedding model
+        self.embedding_model = create_embedding_model("local", "all-MiniLM-L6-v2")
         
         # Initialize components
         self.index_builder = IndexBuilder(knowledge_repo)
@@ -27,132 +43,66 @@ class EnhancedRAGSystem:
             llm_service
         )
         
-        # Initialize TF-IDF components
-        self.vectorizer = TfidfVectorizer(stop_words='english')
-        self._build_embeddings()
-    
-    def _build_embeddings(self):
-        """Build TF-IDF embeddings for all changes."""
-        documents = [change.description for change in self.knowledge_repo.changes]
-        if documents:
-            self.embeddings = self.vectorizer.fit_transform(documents)
-        else:
-            # Handle empty repository case
-            self.embeddings = None
-    
-    def search_similar_changes(self, query: str, top_k: int = 5) -> List[Dict]:
-        """Find changes similar to the query using TF-IDF similarity."""
-        query_vector = self.vectorizer.transform([query])
-        similarities = cosine_similarity(query_vector, self.embeddings)[0]
-        top_indices = np.argsort(-similarities)[:top_k]
-        
-        results = []
-        for idx in top_indices:
-            change = self.knowledge_repo.changes[idx]
-            metrics = self.knowledge_repo.get_metrics_for_change(change.change_id)
-            results.append({
-                "change": change,
-                "metrics": metrics,
-                "similarity_score": similarities[idx]
-            })
-        
-        return results
+        # Initialize Phase 2 components
+        self.intent_analyzer = IntentAnalyzer(
+            config_dir=config_dir,
+            embedding_model=self.embedding_model
+        )
+        # Initialize context selector with reference to self
+        context_selector = ContextSelector(
+            knowledge_repo=knowledge_repo,
+            index_builder=self.index_builder,
+            domain_manager=self.domain_manager,
+            config_dir=config_dir,
+            token_counter=llm_service.token_counter if llm_service else None
+        )
+        context_selector.rag_system = self
+        self.context_selector = context_selector
     
     def generate_insight(self, query: str) -> str:
-        """Generate an insight based on a natural language query with enhanced context."""
-        # Determine query intent
-        intent = self._determine_query_intent(query)
+        """Generate an insight based on a natural language query with enhanced context.
         
-        # Retrieve relevant data based on intent
-        context_data = self._retrieve_context_for_intent(intent, query)
+        Args:
+            query: The query to analyze
+            
+        Returns:
+            Generated insight based on the query and context
+        """
+        # Analyze query intent
+        intent_analysis = self.intent_analyzer.analyze(query)
+        
+        # Select relevant context based on intent
+        context = self.context_selector.select_context(query, intent_analysis)
         
         # Use LLM if available
         if self.llm_service and self.llm_service.is_enabled:
-            # Get answer from LLM using our structured prompt
             return self.llm_service.answer_query(
-                query,
-                intent,
-                self.domain_manager.domain_context,  # Pass the full domain context
-                context_data
+                query=query,
+                intent_analysis=intent_analysis,
+                context=context
             )
         else:
-            # Fallback to basic insights
-            return self._generate_basic_insight(intent, context_data)
+            return self._generate_basic_insight(intent_analysis, context)
     
-    def _determine_query_intent(self, query: str) -> Dict[str, Any]:
-        """Determine the intent of a query."""
-        query_lower = query.lower()
-        intent = {"type": "general_query", "params": {}}
+    def _generate_basic_insight(
+        self,
+        intent_analysis: Dict[str, Any],
+        context: Dict[str, Any]
+    ) -> str:
+        """Generate a basic insight without using LLM.
         
-        # Check for category analysis intent
-        for category in set(change.category for change in self.knowledge_repo.changes):
-            if category.lower() in query_lower:
-                intent = {
-                    "type": "category_analysis",
-                    "params": {"category": category}
-                }
-                return intent
+        Args:
+            intent_analysis: Results of intent analysis
+            context: Selected context data
+            
+        Returns:
+            Basic insight based on available data
+        """
+        intent_type = intent_analysis["intent_type"]
         
-        # Check for metric trend intent
-        for metric in ["revenue", "dau", "retention", "session_length", "conversion_rate"]:
-            if metric in query_lower:
-                intent = {
-                    "type": "metric_trend",
-                    "params": {"metric": metric}
-                }
-                return intent
-        
-        # Default to general query
-        return intent
-    
-    def _format_context(self, context_data: Dict[str, Any]) -> str:
-        """Format context data into a string for token counting."""
-        context_parts = []
-        
-        # Format similar changes
-        if "similar_changes" in context_data:
-            for result in context_data["similar_changes"]:
-                change = result["change"]
-                context_parts.append(f"Change: {change.description}")
-                if "metrics" in result:
-                    metrics = result["metrics"]
-                    context_parts.append(f"Metrics: {str(metrics)}")
-        
-        # Format category performance
-        if "category_performance" in context_data:
-            context_parts.append(f"Category Performance: {str(context_data['category_performance'])}")
-        
-        # Format metric trends
-        if "metric_trends" in context_data:
-            context_parts.append(f"Metric Trends: {str(context_data['metric_trends'])}")
-        
-        return "\n".join(context_parts)
-    
-    def _retrieve_context_for_intent(self, intent: Dict[str, Any], query: str) -> Dict[str, Any]:
-        """Retrieve context data based on query intent."""
-        context_data = {}
-        
-        if intent["type"] == "category_analysis" and "category" in intent["params"]:
-            category = intent["params"]["category"]
-            context_data["category_changes"] = self.search_by_category(category)
-            context_data["category_performance"] = self.analyze_category_performance(category)
-        
-        elif intent["type"] == "metric_trend" and "metric" in intent["params"]:
-            metric = intent["params"]["metric"]
-            context_data["metric_trends"] = self.analyze_metric_trends(metric)
-        
-        # Add similar changes for any query type
-        similar_changes = self.search_similar_changes(query)
-        if similar_changes:
-            context_data["similar_changes"] = similar_changes
-        
-        return context_data
-    
-    def _generate_basic_insight(self, intent: Dict[str, Any], context_data: Dict[str, Any]) -> str:
-        """Generate a basic insight without using LLM."""
-        if intent["type"] == "category_analysis" and "category_performance" in context_data:
-            category = intent["params"]["category"]
-            performance = context_data["category_performance"]
+        if intent_type == "category_analysis" and "category_performance" in context:
+            category = intent_analysis["entities"].get("category", [""])[0]
+            performance = context["category_performance"]
             
             if "metrics_stats" in performance:
                 metrics_text = []
@@ -162,14 +112,14 @@ class EnhancedRAGSystem:
                 
                 return f"Analysis of {category} changes:\n\n" + "\n".join(metrics_text)
         
-        elif intent["type"] == "metric_trend" and "metric_trends" in context_data:
-            metric = intent["params"]["metric"]
-            trends = context_data["metric_trends"]
+        elif intent_type == "metric_trend" and "metric_history" in context:
+            metric = intent_analysis["entities"].get("metric", [""])[0]
+            history = context["metric_history"]
             
-            if "trend_analysis" in trends:
+            if "trend_analysis" in history:
                 trend_text = []
-                for week_data in trends["trend_analysis"]:
-                    trend_text.append(f"Week {week_data['week']}: {week_data['avg_percent_change']:.2f}% change")
+                for period in history["trend_analysis"]:
+                    trend_text.append(f"{period['period']}: {period['percent_change']:.2f}% change")
                 
                 return f"Trend analysis for {metric}:\n\n" + "\n".join(trend_text)
         
@@ -207,3 +157,40 @@ class EnhancedRAGSystem:
     def get_domain_context(self, query: str, intent: Dict[str, Any]) -> Dict[str, Any]:
         """Get relevant domain context for a query."""
         return self.domain_manager.get_context_for_query(query, intent)
+    
+    def search_similar_changes(self, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
+        """Find changes similar to the query using semantic search.
+        
+        Args:
+            query: The search query
+            top_k: Number of results to return
+            
+        Returns:
+            List of similar changes with their similarity scores
+        """
+        # Get query embedding
+        query_embedding = self.embedding_model.embed(query)
+        
+        # Get embeddings for all changes
+        changes = []
+        for change in self.knowledge_repo.changes:
+            if not hasattr(change, 'vector_embedding') or change.vector_embedding is None:
+                # Generate embedding if not already present
+                change.vector_embedding = self.embedding_model.embed(change.description)
+            
+            # Calculate similarity
+            similarity = float(np.dot(query_embedding, change.vector_embedding))
+            
+            # Convert change to dictionary and get metrics
+            change_dict = change.to_dict()
+            metrics = self.knowledge_repo.get_metrics_for_change(change_dict["change_id"])
+            
+            changes.append({
+                "change": {"change": change_dict},  # Match the expected structure in search.py
+                "metrics": metrics,
+                "similarity_score": similarity
+            })
+        
+        # Sort by similarity and return top_k
+        changes.sort(key=lambda x: x["similarity_score"], reverse=True)
+        return changes[:top_k]

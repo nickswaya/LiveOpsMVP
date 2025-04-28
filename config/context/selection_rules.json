@@ -1,0 +1,229 @@
+{
+  "context_rules": {
+    "category_analysis": {
+      "priority_order": [
+        "category_changes",
+        "category_performance",
+        "similar_changes",
+        "domain_knowledge"
+      ],
+      "rules": [
+        {
+          "type": "category_changes",
+          "description": "Recent changes in the category",
+          "time_window": "3 months",
+          "max_items": 10,
+          "required": true
+        },
+        {
+          "type": "category_performance",
+          "description": "Performance metrics for the category",
+          "metrics": ["revenue", "dau", "retention", "conversion_rate"],
+          "time_window": "6 months",
+          "required": true
+        },
+        {
+          "type": "similar_changes",
+          "description": "Similar changes from other categories",
+          "max_items": 5,
+          "similarity_threshold": 0.7,
+          "required": false
+        },
+        {
+          "type": "domain_knowledge",
+          "description": "Relevant domain concepts",
+          "required": true
+        }
+      ]
+    },
+    "metric_trend": {
+      "priority_order": [
+        "metric_history",
+        "confounding_factors",
+        "similar_patterns",
+        "domain_knowledge"
+      ],
+      "rules": [
+        {
+          "type": "metric_history",
+          "description": "Historical metric data",
+          "time_window": "12 months",
+          "granularity": "daily",
+          "required": true
+        },
+        {
+          "type": "confounding_factors",
+          "description": "Other changes that might affect the metric",
+          "time_window": "1 month",
+          "max_items": 5,
+          "required": true
+        },
+        {
+          "type": "similar_patterns",
+          "description": "Similar metric patterns from history",
+          "max_items": 3,
+          "similarity_threshold": 0.8,
+          "required": false
+        },
+        {
+          "type": "domain_knowledge",
+          "description": "Relevant domain concepts",
+          "required": true
+        }
+      ]
+    },
+    "comparative_analysis": {
+      "priority_order": [
+        "comparison_data",
+        "historical_performance",
+        "confounding_factors",
+        "domain_knowledge"
+      ],
+      "rules": [
+        {
+          "type": "comparison_data",
+          "description": "Direct comparison data",
+          "time_window": "6 months",
+          "metrics": ["revenue", "dau", "retention", "conversion_rate"],
+          "required": true
+        },
+        {
+          "type": "historical_performance",
+          "description": "Historical performance data",
+          "time_window": "12 months",
+          "max_items": 5,
+          "required": true
+        },
+        {
+          "type": "confounding_factors",
+          "description": "Factors affecting comparison",
+          "time_window": "1 month",
+          "max_items": 3,
+          "required": false
+        },
+        {
+          "type": "domain_knowledge",
+          "description": "Relevant domain concepts",
+          "required": true
+        }
+      ]
+    },
+    "causal_analysis": {
+      "priority_order": [
+        "temporal_data",
+        "related_changes",
+        "confounding_factors",
+        "domain_knowledge"
+      ],
+      "rules": [
+        {
+          "type": "temporal_data",
+          "description": "Time-series data around the event",
+          "time_window_before": "1 month",
+          "time_window_after": "1 month",
+          "granularity": "daily",
+          "required": true
+        },
+        {
+          "type": "related_changes",
+          "description": "Changes that might be related",
+          "time_window": "2 weeks",
+          "max_items": 5,
+          "required": true
+        },
+        {
+          "type": "confounding_factors",
+          "description": "Other factors that might affect the outcome",
+          "time_window": "1 month",
+          "max_items": 3,
+          "required": true
+        },
+        {
+          "type": "domain_knowledge",
+          "description": "Relevant domain concepts",
+          "required": true
+        }
+      ]
+    },
+    "recommendation": {
+      "priority_order": [
+        "success_patterns",
+        "historical_data",
+        "current_state",
+        "domain_knowledge"
+      ],
+      "rules": [
+        {
+          "type": "success_patterns",
+          "description": "Patterns from successful changes",
+          "time_window": "12 months",
+          "max_items": 5,
+          "required": true
+        },
+        {
+          "type": "historical_data",
+          "description": "Relevant historical data",
+          "time_window": "6 months",
+          "max_items": 5,
+          "required": true
+        },
+        {
+          "type": "current_state",
+          "description": "Current metrics and state",
+          "metrics": ["revenue", "dau", "retention", "conversion_rate"],
+          "required": true
+        },
+        {
+          "type": "domain_knowledge",
+          "description": "Relevant domain concepts",
+          "required": true
+        }
+      ]
+    },
+    "general_query": {
+      "priority_order": [
+        "relevant_changes",
+        "basic_metrics",
+        "domain_knowledge"
+      ],
+      "rules": [
+        {
+          "type": "relevant_changes",
+          "description": "Changes relevant to the query",
+          "time_window": "3 months",
+          "max_items": 5,
+          "required": true
+        },
+        {
+          "type": "basic_metrics",
+          "description": "Basic performance metrics",
+          "metrics": ["revenue", "dau", "retention"],
+          "time_window": "1 month",
+          "required": false
+        },
+        {
+          "type": "domain_knowledge",
+          "description": "Relevant domain concepts",
+          "required": true
+        }
+      ]
+    }
+  },
+  "default_settings": {
+    "token_limits": {
+      "max_total_tokens": 4000,
+      "reserved_tokens": 500,
+      "per_item_limit": 500
+    },
+    "time_windows": {
+      "recent": "1 month",
+      "medium": "3 months",
+      "long": "12 months"
+    },
+    "similarity_thresholds": {
+      "high": 0.8,
+      "medium": 0.7,
+      "low": 0.5
+    }
+  }
+}

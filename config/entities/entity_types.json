@@ -1,0 +1,104 @@
+{
+  "entity_types": {
+    "category": {
+      "description": "Types of changes or features",
+      "values": [
+        "BOGO",
+        "RTP Adjustments",
+        "Pearly Rush Event",
+        "Dealers Edge Event",
+        "Summer Splash Event",
+        "VIP Features",
+        "Add Slot",
+        "Remove Slot"
+      ],
+      "patterns": [
+        "\\b(?:BOGO|RTP|Pearly Rush|Dealers Edge|Summer Splash|VIP)\\b",
+        "\\b(?:Add|Remove)\\s+Slot\\b"
+      ],
+      "aliases": {
+        "buy one get one": "BOGO",
+        "return to player": "RTP",
+        "pearly": "Pearly Rush Event",
+        "dealers": "Dealers Edge Event",
+        "summer": "Summer Splash Event"
+      }
+    },
+    "metric": {
+      "description": "Measurable performance indicators",
+      "values": [
+        "revenue",
+        "dau",
+        "retention",
+        "session_length",
+        "conversion_rate",
+        "SLIB",
+        "OOC"
+      ],
+      "patterns": [
+        "\\b(?:revenue|dau|retention|session length|conversion rate|SLIB|OOC)\\b"
+      ],
+      "aliases": {
+        "daily active users": "dau",
+        "daily users": "dau",
+        "money": "revenue",
+        "earnings": "revenue",
+        "income": "revenue",
+        "player retention": "retention",
+        "session time": "session_length",
+        "play time": "session_length",
+        "conversion": "conversion_rate",
+        "spins left": "SLIB",
+        "spins left in bankroll": "SLIB",
+        "out of coins": "OOC"
+      }
+    },
+    "time_period": {
+      "description": "Time ranges and points",
+      "patterns": [
+        "\\b(?:last|past|previous)\\s+(?:day|week|month|year)\\b",
+        "\\b(?:yesterday|today|tomorrow)\\b",
+        "\\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\\b",
+        "\\b\\d{1,2}\\s+(?:day|week|month|year)s?\\s+ago\\b",
+        "\\b(?:since|before|after)\\s+[\\w\\s]+\\b"
+      ]
+    },
+    "effect": {
+      "description": "Observable changes in metrics",
+      "patterns": [
+        "\\b(?:increase|decrease|improve|decline|drop|rise|change|spike|dip)\\b",
+        "\\b(?:higher|lower|better|worse|more|less)\\b",
+        "\\b(?:up|down)\\b"
+      ]
+    },
+    "objective": {
+      "description": "Goals or desired outcomes",
+      "patterns": [
+        "\\b(?:increase|improve|reduce|optimize|maximize|minimize|boost|enhance)\\s+[\\w\\s]+\\b",
+        "\\b(?:how\\s+(?:to|can|should)\\s+(?:increase|improve|reduce|optimize|maximize|minimize|boost|enhance))\\b"
+      ]
+    },
+    "comparison_targets": {
+      "description": "Items being compared",
+      "patterns": [
+        "\\b(?:compare|vs|versus|or|better|worse|than)\\b",
+        "\\bwhich\\s+(?:is|are|performs|works)\\s+better\\b"
+      ]
+    },
+    "context_factors": {
+      "description": "Additional contextual information",
+      "values": [
+        "high-value players",
+        "new players",
+        "churned players",
+        "seasonal factors",
+        "competition",
+        "market conditions"
+      ],
+      "patterns": [
+        "\\b(?:high-value|new|churned)\\s+players\\b",
+        "\\b(?:seasonal|market|competitive)\\s+(?:factors|conditions|environment)\\b"
+      ]
+    }
+  }
+}

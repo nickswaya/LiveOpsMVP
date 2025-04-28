@@ -1,0 +1,136 @@
+{
+  "examples": {
+    "category_analysis": [
+      {
+        "query": "How do BOGO offers perform?",
+        "entities": {
+          "category": "BOGO"
+        }
+      },
+      {
+        "query": "What's the impact of RTP adjustments on revenue?",
+        "entities": {
+          "category": "RTP Adjustments",
+          "metric": "revenue"
+        }
+      },
+      {
+        "query": "Show me the performance of Pearly Rush events last month",
+        "entities": {
+          "category": "Pearly Rush Event",
+          "time_period": "last month"
+        }
+      }
+    ],
+    "metric_trend": [
+      {
+        "query": "How has revenue changed over time?",
+        "entities": {
+          "metric": "revenue"
+        }
+      },
+      {
+        "query": "What's the DAU trend for the past 3 months?",
+        "entities": {
+          "metric": "dau",
+          "time_period": "past 3 months"
+        }
+      },
+      {
+        "query": "Show retention trends for BOGO offers",
+        "entities": {
+          "metric": "retention",
+          "category": "BOGO"
+        }
+      }
+    ],
+    "comparative_analysis": [
+      {
+        "query": "Compare BOGO vs RTP adjustments for revenue impact",
+        "entities": {
+          "comparison_targets": ["BOGO", "RTP Adjustments"],
+          "metric": "revenue"
+        }
+      },
+      {
+        "query": "Which performs better, events or sales?",
+        "entities": {
+          "comparison_targets": ["events", "sales"]
+        }
+      },
+      {
+        "query": "Compare Pearly Rush and Dealers Edge events",
+        "entities": {
+          "comparison_targets": ["Pearly Rush Event", "Dealers Edge Event"]
+        }
+      }
+    ],
+    "causal_analysis": [
+      {
+        "query": "Why did revenue increase after the Summer Splash event?",
+        "entities": {
+          "effect": "revenue increase",
+          "suspected_cause": "Summer Splash event",
+          "time_period": "after event"
+        }
+      },
+      {
+        "query": "What caused the DAU drop last week?",
+        "entities": {
+          "effect": "DAU drop",
+          "time_period": "last week"
+        }
+      },
+      {
+        "query": "Why did retention improve in March?",
+        "entities": {
+          "effect": "retention improvement",
+          "time_period": "March"
+        }
+      }
+    ],
+    "recommendation": [
+      {
+        "query": "What should we do to increase revenue?",
+        "entities": {
+          "objective": "increase revenue"
+        }
+      },
+      {
+        "query": "How can we improve retention for high-value players?",
+        "entities": {
+          "objective": "improve retention",
+          "context_factors": ["high-value players"]
+        }
+      },
+      {
+        "query": "What's the best way to reduce churn rate?",
+        "entities": {
+          "objective": "reduce churn rate"
+        }
+      }
+    ],
+    "general_query": [
+      {
+        "query": "Tell me about our recent changes",
+        "entities": {
+          "topic": "recent changes"
+        }
+      },
+      {
+        "query": "What changes did we make last week?",
+        "entities": {
+          "topic": "changes",
+          "time_period": "last week"
+        }
+      },
+      {
+        "query": "Show me all BOGO related changes",
+        "entities": {
+          "topic": "changes",
+          "category": "BOGO"
+        }
+      }
+    ]
+  }
+}

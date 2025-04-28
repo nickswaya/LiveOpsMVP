@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-
+from datetime import datetime
 from src.rag.core import EnhancedRAGSystem
 
 def show_search_interface(rag_system: EnhancedRAGSystem):
@@ -18,30 +18,34 @@ def show_search_interface(rag_system: EnhancedRAGSystem):
             change = result["change"]
             metrics = result["metrics"]
             
-            # Create an expander for each result
-            with st.expander(f"{i+1}. {change.description} ({change.category}) - {change.timestamp.strftime('%Y-%m-%d')}"):
-                st.write(f"**Category:** {change.category}")
-                st.write(f"**Tags:** {', '.join(change.tags)}")
+            # Get change data from dictionary
+            change_dict = change["change"]
+            timestamp = datetime.fromisoformat(change_dict["timestamp"])
+            
+            # Create an expander for each result using dictionary access
+            with st.expander(f"{i+1}. {change_dict['description']} ({change_dict['category']}) - {timestamp.strftime('%Y-%m-%d')}"):
+                st.write(f"**Category:** {change_dict['category']}")
+                st.write(f"**Tags:** {', '.join(change_dict['tags'])}")
                 
                 # Display expected vs actual impact
                 st.subheader("Impact Analysis")
                 
                 impact_data = []
                 for metric in metrics:
-                    expected = change.expected_impact.get(metric.metric_name, "neutral")
+                    expected = change_dict["expected_impact"].get(metric["metric_name"], "neutral")
                     actual = "neutral"
-                    if metric.percent_change > 5:
+                    if metric["percent_change"] > 5:
                         actual = "increase"
-                    elif metric.percent_change < -5:
+                    elif metric["percent_change"] < -5:
                         actual = "decrease"
                     
                     impact_data.append({
-                        "Metric": metric.metric_name,
-                        "Before": f"{metric.before_value:.2f}",
-                        "After": f"{metric.after_value:.2f}",
-                        "Change": f"{'+' if metric.percent_change > 0 else ''}{metric.percent_change:.2f}%",
+                        "Metric": metric["metric_name"],
+                        "Before": f"{metric['before_value']:.2f}",
+                        "After": f"{metric['after_value']:.2f}",
+                        "Change": f"{'+' if metric['percent_change'] > 0 else ''}{metric['percent_change']:.2f}%",
                         "Expected": expected,
-                        "Matched": "✓" if expected == actual or (expected == "neutral" and -5 <= metric.percent_change <= 5) else "✗"
+                        "Matched": "✓" if expected == actual or (expected == "neutral" and -5 <= metric["percent_change"] <= 5) else "✗"
                     })
                 
                 impact_df = pd.DataFrame(impact_data)

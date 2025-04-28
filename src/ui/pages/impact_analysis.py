@@ -15,23 +15,28 @@ def show_impact_analysis(rag_system: EnhancedRAGSystem):
         ["revenue", "dau", "retention", "session_length", "conversion_rate"]
     )
     
-    # Generate dataframe with changes and their impact on the selected metric
+    # Get all changes as dictionaries and generate dataframe with their impact
     changes_data = []
     for change in rag_system.knowledge_repo.changes:
-        metrics = rag_system.knowledge_repo.get_metrics_for_change(change.change_id)
+        # Convert change to dictionary
+        change_dict = change.to_dict()
+        # Get metrics as dictionaries
+        metrics = rag_system.knowledge_repo.get_metrics_for_change(change_dict["change_id"])
         # Find the selected metric
-        impact = next((m for m in metrics if m.metric_name == metric), None)
+        impact = next((m for m in metrics if m["metric_name"] == metric), None)
         
         if impact:
+            # Parse timestamp from ISO format
+            timestamp = datetime.fromisoformat(change_dict["timestamp"])
             changes_data.append({
-                "change_id": change.change_id,
-                "date": change.timestamp,  # Keep as datetime for sorting
-                "date_str": change.timestamp.strftime("%Y-%m-%d"),
-                "category": change.category,
-                "description": change.description,
-                "before": impact.before_value,
-                "after": impact.after_value,
-                "percent_change": impact.percent_change
+                "change_id": change_dict["change_id"],
+                "date": timestamp,  # Keep as datetime for sorting
+                "date_str": timestamp.strftime("%Y-%m-%d"),
+                "category": change_dict["category"],
+                "description": change_dict["description"],
+                "before": impact["before_value"],
+                "after": impact["after_value"],
+                "percent_change": impact["percent_change"]
             })
     
     changes_df = pd.DataFrame(changes_data)
@@ -101,7 +106,7 @@ def show_impact_analysis(rag_system: EnhancedRAGSystem):
             selected_change_id = next(option[1] for option in change_options if option[0] == selected_option)
             
             # Analyze the change
-            with st.spinner("Analyzing change..."):
+            with st.spinner("Letting Adam ruminate"):
                 analysis = rag_system.analyze_change_impact(selected_change_id)
             
             # Display the analysis
